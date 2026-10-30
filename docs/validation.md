@@ -8,16 +8,22 @@ Validated on 2026-10-31:
 - OpenPGP: 1095 passed, 8 skipped
 - PIV: 279 passed, 1 skipped
 - Combined table: 161 entries, OpenPGP FCI at index 159
-- `yubikey5` ELF contains `Yubico` / `Yubico YubiKey`
+- `yubikey5` builds contain `Yubico` / `Yubico YubiKey`
 - `yubikey5` UF2 device descriptor contains `50 10 07 04` (`1050:0407`)
 - `default` UF2 device descriptor contains `ff fe fd fc` (`FEFF:FCFD`)
+- `pico_aio_rp2350_usb` preprocessor output contains
+  `PICO_DEFAULT_WS2812_PIN 22` and `PICO_AIO_FORCE_WS2812 1`
+- Switching `default` to `yubikey5` in the same board build directory
+  recompiles only `usb_descriptors.c` and relinks
 
 Artifact sizes:
 
-| Profile | text | bss |
-|---|---:|---:|
-| default | 566848 | 89652 |
-| yubikey5 | 566864 | 89652 |
+| Board | Profile | text | bss |
+|---|---|---:|---:|
+| pico2 | default | 566848 | 89652 |
+| pico2 | yubikey5 | 566864 | 89652 |
+| rp2350-usb | default | 566448 | 89652 |
+| rp2350-usb | yubikey5 | 566464 | 89652 |
 
 ## Hardware
 
@@ -30,7 +36,7 @@ Earlier RP2350 validation of the minimal `file_new()` fix passed:
 - Signature verification
 - Encrypt/decrypt round trip
 
-The `pico-aio-pico2-yubikey5` UF2 was flashed on 2026-10-31.
+The generic `pico-aio-pico2-yubikey5` UF2 was flashed on 2026-10-31.
 
 `ykman info` reports:
 
@@ -49,6 +55,9 @@ OpenPGP      Enabled
 
 `ykman piv info` reads PIV 5.7.0 metadata. `ykman oath info` reads OATH 8.2.0.
 `ykman config usb --list` reports OTP, U2F, FIDO2, OATH, PIV, and OpenPGP.
+
+The `pico-aio-rp2350-usb-yubikey5` UF2 still needs flashing and visual
+confirmation that the WS2812 on GPIO22 lights up.
 
 The OpenPGP applet was validated with the existing Var1 User key:
 
@@ -74,17 +83,13 @@ tests/hardware/ykman-smoke.sh
 
 ## CI
 
-GitHub Actions run
-[41116851659](https://github.com/jeffpeng3/pico-aio/actions/runs/41116851659)
-completed successfully.
+GitHub Actions builds the four UF2 files in one job with ccache:
 
-Artifacts:
-
+- `pico-aio-rp2350-usb-default`
+- `pico-aio-rp2350-usb-yubikey5`
 - `pico-aio-pico2-default`
 - `pico-aio-pico2-yubikey5`
-- `pico-aio-pico-default`
-- `pico-aio-pico-yubikey5`
 
-The downloaded `pico2-yubikey5` UF2 contains USB descriptor bytes
-`50 10 07 04`, and the downloaded `pico` default UF2 contains
-`ff fe fd fc`.
+The `rp2350-usb` default build is the base. The other configurations reuse
+ccache and incremental compilation. Tagged releases attach the UF2 files and
+`SHA256SUMS.txt`.

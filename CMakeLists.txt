@@ -16,8 +16,15 @@ if(NOT PICO_SDK_PATH)
     set(PICO_SDK_PATH "${PICO_AIO_PICO_SDK_DIR}" CACHE PATH "Raspberry Pi Pico SDK" FORCE)
 endif()
 if(NOT PICO_BOARD)
-    set(PICO_BOARD "pico2" CACHE STRING "Pico board")
+    set(PICO_BOARD "pico_aio_rp2350_usb" CACHE STRING "Pico board")
 endif()
+
+set(PICO_BOARD_HEADER_DIRS
+    "${CMAKE_CURRENT_SOURCE_DIR}/boards"
+    CACHE STRING "Pico board header directories" FORCE)
+set(PICO_AIO_USB_CONFIG_HEADER 1)
+set(GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+set(COMBINED_FILES ${GENERATED_DIR}/files_combined.c)
 
 string(TOLOWER "${PICO_AIO_USB_PROFILE}" PICO_AIO_USB_PROFILE_LC)
 set(USB_MANUFACTURER "Pico AIO")
@@ -51,6 +58,13 @@ endif()
 if(PICO_AIO_USB_PRODUCT)
     set(USB_PRODUCT "${PICO_AIO_USB_PRODUCT}")
 endif()
+
+file(MAKE_DIRECTORY ${GENERATED_DIR})
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pico_aio_usb_config.h.in
+    ${GENERATED_DIR}/pico_aio_usb_config.h
+    @ONLY
+)
 
 if(NOT ENABLE_EMULATION)
     set(PICO_USE_FASTEST_SUPPORTED_CLOCK 1)
@@ -106,8 +120,6 @@ list(REMOVE_ITEM OPENPGP_SOURCES
 )
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
-set(GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
-set(COMBINED_FILES ${GENERATED_DIR}/files_combined.c)
 
 add_custom_command(
     OUTPUT ${COMBINED_FILES}
@@ -145,10 +157,6 @@ set(INCLUDES
 target_sources(pico_fido2 PRIVATE ${SOURCES})
 target_include_directories(pico_fido2 PRIVATE ${INCLUDES})
 target_compile_options(pico_fido2 PRIVATE -Wall)
-target_compile_definitions(pico_fido2 PRIVATE
-    "USB_MANUFACTURER_STR=\"${USB_MANUFACTURER}\""
-    "USB_PRODUCT_STR=\"${USB_PRODUCT}\""
-)
 
 if(ENABLE_EMULATION)
     target_link_libraries(pico_fido2 PRIVATE picokeys_sdk mbedtls)

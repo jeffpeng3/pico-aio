@@ -41,3 +41,24 @@ prefix.
 Both FIDO and PIV define `cmd_version()`. The PIV implementation is renamed to
 `cmd_piv_version()` in the downstream patch so the two applets can link into one
 binary.
+
+## Board support
+
+The primary board is `pico_aio_rp2350_usb`, an RP2350 USB board with a WS2812
+LED on GPIO22. Its board header includes `boards/pico2.h` and adds:
+
+```c
+#define PICO_DEFAULT_WS2812_PIN 22
+#define PICO_AIO_FORCE_WS2812 1
+```
+
+The force flag matters because `EF_PHY` can contain an older LED configuration
+from a previous firmware. Without it, a saved GPIO25 Pico LED setting would
+override the board default.
+
+## USB profile compilation
+
+USB VID, PID, manufacturer, and product strings are generated into
+`build/<board>/generated/pico_aio_usb_config.h` and included only by
+`usb_descriptors.c`. Changing between `default` and `yubikey5` recompiles that
+one object, not the whole firmware.

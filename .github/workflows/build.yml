@@ -12,61 +12,68 @@ permissions:
 
 jobs:
   build:
-    name: ${{ matrix.board }}-${{ matrix.profile }}
+    name: build-uf2
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - board: pico2
-            profile: default
-          - board: pico2
-            profile: yubikey5
-          - board: pico
-            profile: default
-          - board: pico
-            profile: yubikey5
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_COMPRESS: "true"
+      CCACHE_MAXSIZE: "1G"
+      CCACHE_NOHASHDIR: "true"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
-          fetch-depth: 0
+          fetch-depth: 1
           submodules: false
 
       - name: Install toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            cmake ninja-build python3 git \
+            cmake ninja-build python3 git ccache \
             gcc-arm-none-eabi libnewlib-arm-none-eabi \
             libstdc++-arm-none-eabi-newlib
 
       - name: Initialize submodules
         run: tools/bootstrap.sh
 
+      - name: Restore Pico Keys dependencies
+        uses: actions/cache@v6
+        with:
+          path: third_party/pico-keys-sdk/third-party
+          key: ${{ runner.os }}-picokeys-deps-${{ hashFiles('versions.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-picokeys-deps-
+
+      - name: Restore ccache
+        uses: actions/cache@v6
+        with:
+          path: .ccache
+          key: ${{ runner.os }}-ccache-${{ hashFiles('versions.lock', 'patches/**', 'CMakeLists.txt', 'CMakePresets.json', 'cmake/**', 'boards/**', 'tools/gen_files.py') }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-
+
       - name: Apply patches
         run: tools/apply-patches.sh
 
-      - name: Configure
-        run: |
-          cmake -S . -B "build/${{ matrix.board }}-${{ matrix.profile }}" -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DPICO_BOARD=${{ matrix.board }} \
-            -DPICO_AIO_USB_PROFILE=${{ matrix.profile }}
+      - name: Build rp2350-usb default (base)
+        run: tools/build.sh --board pico_aio_rp2350_usb --profile default
 
-      - name: Build
-        run: cmake --build "build/${{ matrix.board }}-${{ matrix.profile }}" --parallel
+      - name: Build rp2350-usb yubikey5
+        run: tools/build.sh --board pico_aio_rp2350_usb --profile yubikey5
 
-      - name: Stage artifacts
-        run: |
-          mkdir -p dist
-          cp "build/${{ matrix.board }}-${{ matrix.profile }}/pico_fido2.uf2" \
-             "dist/pico-aio-${{ matrix.board }}-${{ matrix.profile }}.uf2"
-          cp "build/${{ matrix.board }}-${{ matrix.profile }}/pico_fido2.elf" \
-             "dist/pico-aio-${{ matrix.board }}-${{ matrix.profile }}.elf"
+      - name: Build pico2 default
+        run: tools/build.sh --board pico2 --profile default
 
-      - uses: actions/upload-artifact@v4
+      - name: Build pico2 yubikey5
+        run: tools/build.sh --board pico2 --profile yubikey5
+
+      - name: ccache stats
+        run: ccache --show-stats
+
+      - uses: actions/upload-artifact@v7
         with:
-          name: pico-aio-${{ matrix.board }}-${{ matrix.profile }}
+          name: pico-aio-uf2
           path: dist/*
           if-no-files-found: error
 
@@ -76,7 +83,7 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
           merge-multiple: true

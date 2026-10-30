@@ -21,7 +21,7 @@
       "name": "pico2-yubikey5",
       "displayName": "Pico 2 YubiKey compatibility",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/pico2-yubikey5",
+      "binaryDir": "${sourceDir}/build/pico2",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "PICO_BOARD": "pico2",
@@ -29,25 +29,25 @@
       }
     },
     {
-      "name": "pico2-local",
-      "displayName": "Pico 2 local CCID test",
+      "name": "rp2350-usb",
+      "displayName": "RP2350 USB with WS2812 GPIO22",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/pico2-local",
+      "binaryDir": "${sourceDir}/build/rp2350-usb",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "PICO_BOARD": "pico2",
-        "PICO_AIO_USB_PROFILE": "local"
+        "PICO_BOARD": "pico_aio_rp2350_usb",
+        "PICO_AIO_USB_PROFILE": "default"
       }
     },
     {
-      "name": "pico",
-      "displayName": "Pico 1 default",
+      "name": "rp2350-usb-yubikey5",
+      "displayName": "RP2350 USB YubiKey compatibility",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/pico",
+      "binaryDir": "${sourceDir}/build/rp2350-usb",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "PICO_BOARD": "pico",
-        "PICO_AIO_USB_PROFILE": "default"
+        "PICO_BOARD": "pico_aio_rp2350_usb",
+        "PICO_AIO_USB_PROFILE": "yubikey5"
       }
     },
     {
@@ -64,8 +64,8 @@
   "buildPresets": [
     { "name": "pico2", "configurePreset": "pico2" },
     { "name": "pico2-yubikey5", "configurePreset": "pico2-yubikey5" },
-    { "name": "pico2-local", "configurePreset": "pico2-local" },
-    { "name": "pico", "configurePreset": "pico" },
+    { "name": "rp2350-usb", "configurePreset": "rp2350-usb" },
+    { "name": "rp2350-usb-yubikey5", "configurePreset": "rp2350-usb-yubikey5" },
     { "name": "emu", "configurePreset": "emu" }
   ]
 }

@@ -1,7 +1,9 @@
 # pico-aio
 
 Unofficial all-in-one FIDO2, U2F, OATH, OTP, OpenPGP, and PIV firmware for
-RP2040 and RP2350, built from pinned upstream submodules with explicit patches.
+RP2350, built from pinned upstream submodules with explicit patches.
+
+The primary target is the RP2350 USB board with a WS2812 LED on GPIO22.
 
 This project is not affiliated with Pol Henarejos, Raspberry Pi Ltd, or
 Yubico AB.
@@ -17,6 +19,15 @@ Yubico AB.
 - EdDSA and libcvc support
 - USB HID, CCID, and WebCCID interfaces
 - Combined FIDO + OpenPGP file table generated at build time
+
+## Boards
+
+| Board | Description |
+|---|---|
+| `pico_aio_rp2350_usb` | RP2350 USB board, WS2812 on GPIO22 |
+| `pico2` | Generic Raspberry Pi Pico 2 |
+
+RP2040 is not built or tested.
 
 ## USB profiles
 
@@ -40,15 +51,15 @@ cd pico-aio
 tools/bootstrap.sh
 tools/apply-patches.sh
 
-cmake --preset pico2
-cmake --build --preset pico2
+cmake --preset rp2350-usb
+cmake --build --preset rp2350-usb
 ```
 
 Or use the wrapper:
 
 ```bash
-tools/build.sh --board pico2 --profile default
-tools/build.sh --board pico2 --profile yubikey5
+tools/build.sh --board pico_aio_rp2350_usb --profile default
+tools/build.sh --board pico_aio_rp2350_usb --profile yubikey5
 ```
 
 Artifacts are copied to `dist/`.
@@ -59,14 +70,17 @@ nested `pico-keys-sdk` gitlinks are not used by this build.
 
 ## CI
 
-GitHub Actions builds UF2 files for:
+GitHub Actions builds all UF2 files in one job with ccache and a shared build
+directory per board:
 
+- `rp2350-usb` / `default`
+- `rp2350-usb` / `yubikey5`
 - `pico2` / `default`
 - `pico2` / `yubikey5`
-- `pico` / `default`
-- `pico` / `yubikey5`
 
-Tagged releases attach the UF2 files and `SHA256SUMS.txt`.
+`rp2350-usb` default is the base build. The other configurations reuse ccache
+and incremental compilation. Tagged releases attach the UF2 files and
+`SHA256SUMS.txt`.
 
 ## Patches
 
@@ -79,6 +93,10 @@ the submodules.
 | `pico-keys-sdk` | `0002-main-longest-aid-match` | Correct multi-applet AID selection |
 | `pico-keys-sdk` | `0003-usb-descriptor-overrides` | Allow manufacturer/product strings |
 | `pico-keys-sdk` | `0004-import-relative-paths` | Support SDK in a subdirectory |
+| `pico-keys-sdk` | `0005-led-force-board-ws2812` | Force WS2812 GPIO22 on the dedicated board |
+| `pico-keys-sdk` | `0006-usb-config-header` | Keep USB profile defines out of global flags |
+| `pico-keys-sdk` | `0007-usb-config-include` | Include the generated USB config header |
+| `pico-keys-sdk` | `0008-board-header-path` | Read custom board headers from PICO_BOARD_HEADER_FILE |
 | `pico-openpgp` | `0001-piv-rename-cmd-version` | Avoid `cmd_version` symbol collision |
 | `pico-openpgp` | `0002-files-combined-table-guard` | Disable standalone file table |
 | `pico-fido` | `0001-files-combined-table-guard` | Disable standalone file table |

@@ -30,6 +30,22 @@ pico_aio_require_patch(
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/pico-keys-sdk/0004-import-relative-paths.patch
 )
 pico_aio_require_patch(
+    ${PICO_AIO_SDK_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/pico-keys-sdk/0005-led-force-board-ws2812.patch
+)
+pico_aio_require_patch(
+    ${PICO_AIO_SDK_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/pico-keys-sdk/0006-usb-config-header.patch
+)
+pico_aio_require_patch(
+    ${PICO_AIO_SDK_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/pico-keys-sdk/0007-usb-config-include.patch
+)
+pico_aio_require_patch(
+    ${PICO_AIO_SDK_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/pico-keys-sdk/0008-board-header-path.patch
+)
+pico_aio_require_patch(
     ${PICO_AIO_OPENPGP_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/pico-openpgp/0001-piv-rename-cmd-version.patch
 )

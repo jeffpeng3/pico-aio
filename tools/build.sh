@@ -2,9 +2,8 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-BOARD=${BOARD:-pico2}
+BOARD=${BOARD:-pico_aio_rp2350_usb}
 PROFILE=${PROFILE:-default}
-BUILD_DIR=${BUILD_DIR:-"$ROOT/build/$BOARD-$PROFILE"}
 CLEAN=0
 
 while [ "$#" -gt 0 ]; do
@@ -18,16 +17,33 @@ while [ "$#" -gt 0 ]; do
 done
 
 cd "$ROOT"
+
+case "$BOARD" in
+    pico_aio_rp2350_usb) BOARD_LABEL=rp2350-usb ;;
+    *) BOARD_LABEL=$BOARD ;;
+esac
+
+BUILD_DIR=${BUILD_DIR:-"$ROOT/build/$BOARD_LABEL"}
+
 "$ROOT/tools/apply-patches.sh"
 
 if [ "$CLEAN" = "1" ]; then
     rm -rf "$BUILD_DIR"
 fi
 
+CMAKE_LAUNCHER_ARGS=()
+if [ "${USE_CCACHE:-1}" != "0" ] && command -v ccache >/dev/null 2>&1; then
+    CMAKE_LAUNCHER_ARGS+=(
+        -DCMAKE_C_COMPILER_LAUNCHER=ccache
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+    )
+fi
+
 cmake -S "$ROOT" -B "$BUILD_DIR" -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DPICO_BOARD="$BOARD" \
-    -DPICO_AIO_USB_PROFILE="$PROFILE"
+    -DPICO_AIO_USB_PROFILE="$PROFILE" \
+    "${CMAKE_LAUNCHER_ARGS[@]}"
 
 cmake --build "$BUILD_DIR" --parallel "$(nproc)"
 
@@ -35,7 +51,7 @@ mkdir -p "$ROOT/dist"
 for ext in uf2 elf bin; do
     src="$BUILD_DIR/pico_fido2.$ext"
     if [ -f "$src" ]; then
-        dst="$ROOT/dist/pico-aio-$BOARD-$PROFILE.$ext"
+        dst="$ROOT/dist/pico-aio-$BOARD_LABEL-$PROFILE.$ext"
         cp "$src" "$dst"
         echo "artifact: $dst"
     fi

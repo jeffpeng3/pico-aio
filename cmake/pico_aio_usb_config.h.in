@@ -1,0 +1,6 @@
+#pragma once
+
+#define USB_VID @USB_VID@
+#define USB_PID @USB_PID@
+#define USB_MANUFACTURER_STR "@USB_MANUFACTURER@"
+#define USB_PRODUCT_STR "@USB_PRODUCT@"

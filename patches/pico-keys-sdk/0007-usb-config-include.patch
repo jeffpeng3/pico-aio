@@ -1,0 +1,17 @@
+diff --git a/src/usb/usb_descriptors.c b/src/usb/usb_descriptors.c
+index b6b8c61..3c16650 100644
+--- a/src/usb/usb_descriptors.c
++++ b/src/usb/usb_descriptors.c
+@@ -24,6 +24,12 @@
+ #include "usb.h"
+ #include "serial.h"
+ 
++#if defined(__has_include)
++# if __has_include("pico_aio_usb_config.h")
++#  include "pico_aio_usb_config.h"
++# endif
++#endif
++
+ #ifndef USB_VID
+ #define USB_VID   0x2E8A
+ #endif

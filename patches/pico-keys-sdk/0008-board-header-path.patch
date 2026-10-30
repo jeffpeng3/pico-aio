@@ -1,0 +1,17 @@
+diff --git a/picokeys_sdk_import.cmake b/picokeys_sdk_import.cmake
+index 365212e..9fd05fa 100644
+--- a/picokeys_sdk_import.cmake
++++ b/picokeys_sdk_import.cmake
+@@ -558,7 +562,11 @@ endif()
+ 
+ set(IS_CYW43 0)
+ if(PICO_PLATFORM)
+-    file(READ ${PICO_SDK_PATH}/src/boards/include/boards/${PICO_BOARD}.h content)
++    if(DEFINED PICO_BOARD_HEADER_FILE AND EXISTS "${PICO_BOARD_HEADER_FILE}")
++        file(READ ${PICO_BOARD_HEADER_FILE} content)
++    else()
++        file(READ ${PICO_SDK_PATH}/src/boards/include/boards/${PICO_BOARD}.h content)
++    endif()
+     string(REGEX MATCHALL "CYW43_WL_GPIO_LED_PIN" _ ${content})
+     if(CMAKE_MATCH_0)
+         message(STATUS "Found cyw43 LED:\t\t true")
