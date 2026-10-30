@@ -30,22 +30,47 @@ Earlier RP2350 validation of the minimal `file_new()` fix passed:
 - Signature verification
 - Encrypt/decrypt round trip
 
-The new `pico-aio` UF2 still needs a hardware flash and ykman smoke test. The
-current test board was not reachable in BOOTSEL mode from the build host.
+The `pico-aio-pico2-yubikey5` UF2 was flashed on 2026-10-31.
+
+`ykman info` reports:
+
+```text
+Device type: YubiKey 5A
+Firmware version: 8.2.0
+Enabled USB interfaces: OTP, FIDO, CCID
+
+Yubico OTP   Enabled
+FIDO U2F     Enabled
+FIDO2        Enabled
+OATH         Enabled
+PIV          Enabled
+OpenPGP      Enabled
+```
+
+`ykman piv info` reads PIV 5.7.0 metadata. `ykman oath info` reads OATH 8.2.0.
+`ykman config usb --list` reports OTP, U2F, FIDO2, OATH, PIV, and OpenPGP.
+
+The OpenPGP applet was validated with the existing Var1 User key:
+
+- `gpg --card-status` shows OpenPGP card v3.4 and all three keys
+- `gpg --detach-sign` succeeds
+- `gpg --verify` reports `Good signature`
+- encrypt/decrypt round trip returns MATCH
+
+After flashing, kill stale gpg agents once:
+
+```bash
+gpgconf --kill all
+pkill -x scdaemon
+```
+
+Without that, gpg can loop on a stale `CONFIRM 1` inquiry from the old reader.
 
 Hardware smoke test:
 
 ```bash
 tests/hardware/ykman-smoke.sh
 ```
-
-Expected checks:
-
-- `ykman info` sees a YubiKey 4 compatible device
-- `ykman piv info` reads PIV metadata
-- `ykman oath info` reads OATH state
-- `ykman config usb` reads the management applet
-- `gpg --card-status` sees the OpenPGP applet
 
 ## CI
 
