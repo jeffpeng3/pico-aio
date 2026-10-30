@@ -83,7 +83,11 @@ tests/hardware/ykman-smoke.sh
 
 ## CI
 
-GitHub Actions builds the four UF2 files in one job with ccache:
+GitHub Actions run
+[41126558188](https://github.com/jeffpeng3/pico-aio/actions/runs/41126558188)
+completed successfully in 2m49s.
+
+The single `build-uf2` job builds four UF2 files:
 
 - `pico-aio-rp2350-usb-default`
 - `pico-aio-rp2350-usb-yubikey5`
@@ -91,5 +95,10 @@ GitHub Actions builds the four UF2 files in one job with ccache:
 - `pico-aio-pico2-yubikey5`
 
 The `rp2350-usb` default build is the base. The other configurations reuse
-ccache and incremental compilation. Tagged releases attach the UF2 files and
-`SHA256SUMS.txt`.
+ccache and incremental compilation. Switching profile in the same board build
+directory recompiles only `usb_descriptors.c`.
+
+The run uploaded one `pico-aio-uf2` artifact containing 12 files (UF2, ELF, and
+BIN for four configurations). Node 20 deprecation warnings are gone after
+moving to `actions/checkout@v7`, `actions/upload-artifact@v7`, and
+`actions/download-artifact@v8`.
