@@ -1,0 +1,26 @@
+diff --git a/src/usb/usb_descriptors.c b/src/usb/usb_descriptors.c
+index b6b8c61..86aeb56 100644
+--- a/src/usb/usb_descriptors.c
++++ b/src/usb/usb_descriptors.c
+@@ -343,12 +343,19 @@ uint8_t const *tud_descriptor_bos_cb(void) {
+ // String Descriptors
+ //--------------------------------------------------------------------+
+ 
++#ifndef USB_MANUFACTURER_STR
++#define USB_MANUFACTURER_STR "Pol Henarejos"
++#endif
++#ifndef USB_PRODUCT_STR
++#define USB_PRODUCT_STR "Pico Key"
++#endif
++
+ // array of pointer to string descriptors
+ char *string_desc_itf[5] = {0};
+ char const *string_desc_arr [] = {
+     (const char[]) { 0x09, 0x04 }, // 0: is supported language is English (0x0409)
+-    "Pol Henarejos",                     // 1: Manufacturer
+-    "Pico Key",                       // 2: Product
++    USB_MANUFACTURER_STR,             // 1: Manufacturer
++    USB_PRODUCT_STR,                  // 2: Product
+     "11223344",                      // 3: Serials, should use chip ID
+     "MAC"                   // 4: MAC address string, handled separately
+     , "HID Interface"

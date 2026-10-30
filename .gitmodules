@@ -1,0 +1,15 @@
+[submodule "third_party/pico-keys-sdk"]
+	path = third_party/pico-keys-sdk
+	url = https://github.com/polhenarejos/pico-keys-sdk.git
+	ignore = untracked
+[submodule "third_party/pico-fido"]
+	path = third_party/pico-fido
+	url = https://github.com/polhenarejos/pico-fido.git
+	ignore = untracked
+[submodule "third_party/pico-openpgp"]
+	path = third_party/pico-openpgp
+	url = https://github.com/polhenarejos/pico-openpgp.git
+	ignore = untracked
+[submodule "third_party/pico-sdk"]
+	path = third_party/pico-sdk
+	url = https://github.com/raspberrypi/pico-sdk.git

@@ -1,0 +1,97 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.board }}-${{ matrix.profile }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - board: pico2
+            profile: default
+          - board: pico2
+            profile: yubikey5
+          - board: pico
+            profile: default
+          - board: pico
+            profile: yubikey5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build python3 git \
+            gcc-arm-none-eabi libnewlib-arm-none-eabi \
+            libstdc++-arm-none-eabi-newlib
+
+      - name: Initialize submodules
+        run: tools/bootstrap.sh
+
+      - name: Apply patches
+        run: tools/apply-patches.sh
+
+      - name: Configure
+        run: |
+          cmake -S . -B "build/${{ matrix.board }}-${{ matrix.profile }}" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPICO_BOARD=${{ matrix.board }} \
+            -DPICO_AIO_USB_PROFILE=${{ matrix.profile }}
+
+      - name: Build
+        run: cmake --build "build/${{ matrix.board }}-${{ matrix.profile }}" --parallel
+
+      - name: Stage artifacts
+        run: |
+          mkdir -p dist
+          cp "build/${{ matrix.board }}-${{ matrix.profile }}/pico_fido2.uf2" \
+             "dist/pico-aio-${{ matrix.board }}-${{ matrix.profile }}.uf2"
+          cp "build/${{ matrix.board }}-${{ matrix.profile }}/pico_fido2.elf" \
+             "dist/pico-aio-${{ matrix.board }}-${{ matrix.profile }}.elf"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pico-aio-${{ matrix.board }}-${{ matrix.profile }}
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    name: release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Checksums
+        run: |
+          cd artifacts
+          sha256sum *.uf2 *.elf > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" artifacts/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes

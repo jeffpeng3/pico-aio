@@ -1,0 +1,39 @@
+diff --git a/src/openpgp/piv.c b/src/openpgp/piv.c
+index 793ba60..70ac5c9 100644
+--- a/src/openpgp/piv.c
++++ b/src/openpgp/piv.c
+@@ -673,7 +673,7 @@ static const cmd_t standard_cmds[] = {
+ };
+ 
+ static const cmd_t extension_cmds[] = {
+-    { INS_VERSION, cmd_version },
++    { INS_VERSION, cmd_piv_version },
+     { INS_YK_SERIAL, cmd_get_serial },
+     { INS_GET_METADATA, cmd_get_metadata },
+     { INS_SET_MGMKEY, cmd_set_mgmkey },
+diff --git a/src/piv/cmd_version.c b/src/piv/cmd_version.c
+index 8822ecd..e246512 100644
+--- a/src/piv/cmd_version.c
++++ b/src/piv/cmd_version.c
+@@ -19,7 +19,7 @@
+ #include "piv.h"
+ 
+ 
+-int cmd_version(void) {
++int cmd_piv_version(void) {
+     res_APDU[res_APDU_size++] = PIV_VERSION_MAJOR;
+     res_APDU[res_APDU_size++] = PIV_VERSION_MINOR;
+     res_APDU[res_APDU_size++] = 0x0;
+diff --git a/src/piv/piv.h b/src/piv/piv.h
+index d13cd67..ff94c5f 100644
+--- a/src/piv/piv.h
++++ b/src/piv/piv.h
+@@ -125,7 +125,7 @@ int authenticate_mgm(uint8_t algo, file_t *ef_mgm, uint8_t chal_len, const tlv_c
+ bool piv_first_auth_operation(const tlv_ctx_t *ctx, uint16_t *tag, tlv_ctx_t *value);
+ int piv_ecdh(file_t *ef_key, uint8_t algo, const tlv_ctx_t *peer_key);
+ 
+-int cmd_version(void);
++int cmd_piv_version(void);
+ int cmd_piv_select(void);
+ int cmd_get_serial(void);
+ int cmd_piv_verify(void);

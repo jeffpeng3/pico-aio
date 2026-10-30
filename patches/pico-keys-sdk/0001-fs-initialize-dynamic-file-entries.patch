@@ -1,0 +1,13 @@
+diff --git a/src/fs/file.c b/src/fs/file.c
+index f1d1a96..0fbfec4 100644
+--- a/src/fs/file.c
++++ b/src/fs/file.c
+@@ -499,7 +499,7 @@ file_t *file_new(uint16_t fid) {
+     if (!f) {
+         return NULL;
+     }
+-    f->data = NULL;
++    memset(f, 0, sizeof(*f));
+     f->fid = fid;
+     dynamic_files++;
+     return f;

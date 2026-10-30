@@ -1,0 +1,71 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "pico2",
+      "displayName": "Pico 2 default",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/pico2",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "PICO_BOARD": "pico2",
+        "PICO_AIO_USB_PROFILE": "default"
+      }
+    },
+    {
+      "name": "pico2-yubikey5",
+      "displayName": "Pico 2 YubiKey compatibility",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/pico2-yubikey5",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "PICO_BOARD": "pico2",
+        "PICO_AIO_USB_PROFILE": "yubikey5"
+      }
+    },
+    {
+      "name": "pico2-local",
+      "displayName": "Pico 2 local CCID test",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/pico2-local",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "PICO_BOARD": "pico2",
+        "PICO_AIO_USB_PROFILE": "local"
+      }
+    },
+    {
+      "name": "pico",
+      "displayName": "Pico 1 default",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/pico",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "PICO_BOARD": "pico",
+        "PICO_AIO_USB_PROFILE": "default"
+      }
+    },
+    {
+      "name": "emu",
+      "displayName": "Host emulation",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/emu",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_EMULATION": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "pico2", "configurePreset": "pico2" },
+    { "name": "pico2-yubikey5", "configurePreset": "pico2-yubikey5" },
+    { "name": "pico2-local", "configurePreset": "pico2-local" },
+    { "name": "pico", "configurePreset": "pico" },
+    { "name": "emu", "configurePreset": "emu" }
+  ]
+}

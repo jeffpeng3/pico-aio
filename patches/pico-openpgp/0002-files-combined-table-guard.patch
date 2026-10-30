@@ -1,0 +1,17 @@
+diff --git a/src/openpgp/files.c b/src/openpgp/files.c
+index 38bff2c..3ab1d84 100644
+--- a/src/openpgp/files.c
++++ b/src/openpgp/files.c
+@@ -71,6 +71,7 @@ uint8_t exlen_info[] = {
+     0x2, 0x2, 0x07, 0xf6,
+ };
+ 
++#ifndef PICO_FIDO2_COMBINED_FILES
+ file_entry_t file_entries[] = {
+     /*  0 */ { .fid = 0x3f00, .parent = 0xff, .name = NULL, .type = FILE_TYPE_DF, .data = NULL,
+                .ef_structure = 0, .acl = ACL_NONE },                                                                                  // MF
+@@ -507,3 +508,4 @@ file_entry_t file_entries[] = {
+ const file_t *MF = &file_entries[0].file;
+ const file_t *file_openpgp = &file_entries[sizeof(file_entries) / sizeof(file_entry_t) - 2].file;
+ const file_entry_t *file_last = &file_entries[sizeof(file_entries) / sizeof(file_entry_t) - 1];
++#endif
