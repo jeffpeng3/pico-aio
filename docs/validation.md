@@ -56,8 +56,15 @@ OpenPGP      Enabled
 `ykman piv info` reads PIV 5.7.0 metadata. `ykman oath info` reads OATH 8.2.0.
 `ykman config usb --list` reports OTP, U2F, FIDO2, OATH, PIV, and OpenPGP.
 
-The `pico-aio-rp2350-usb-yubikey5` UF2 still needs flashing and visual
-confirmation that the WS2812 on GPIO22 lights up.
+The `pico-aio-rp2350-usb-yubikey5` UF2 was flashed on 2026-10-31.
+
+WS2812 on GPIO22 was verified with RGB order:
+
+- Not mounted: red blink
+- Mounted: green blink
+- CCID `SCARD_UNPOWER_CARD`: blue blink
+- RGB order was required; the initial GRB setting turned the mounted green
+  state into red
 
 The OpenPGP applet was validated with the existing Var1 User key:
 
@@ -84,8 +91,8 @@ tests/hardware/ykman-smoke.sh
 ## CI
 
 GitHub Actions run
-[41126558188](https://github.com/jeffpeng3/pico-aio/actions/runs/41126558188)
-completed successfully in 2m49s.
+[41128275389](https://github.com/jeffpeng3/pico-aio/actions/runs/41128275389)
+completed successfully in 2m25s.
 
 The single `build-uf2` job builds four UF2 files:
 
