@@ -12,7 +12,7 @@ index 145cafb..9ca808c 100644
 +    phy_data.led_gpio = PICO_DEFAULT_WS2812_PIN;
 +    phy_data.led_driver_present = true;
 +    phy_data.led_gpio_present = true;
-+    phy_data.led_order = PHY_LED_ORDER_GRB;
++    phy_data.led_order = PHY_LED_ORDER_RGB;
 +    phy_data.led_order_present = true;
 +#endif
      phy_data.led_driver_present = true;
