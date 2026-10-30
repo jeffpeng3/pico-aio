@@ -46,3 +46,20 @@ Expected checks:
 - `ykman oath info` reads OATH state
 - `ykman config usb` reads the management applet
 - `gpg --card-status` sees the OpenPGP applet
+
+## CI
+
+GitHub Actions run
+[41116851659](https://github.com/jeffpeng3/pico-aio/actions/runs/41116851659)
+completed successfully.
+
+Artifacts:
+
+- `pico-aio-pico2-default`
+- `pico-aio-pico2-yubikey5`
+- `pico-aio-pico-default`
+- `pico-aio-pico-yubikey5`
+
+The downloaded `pico2-yubikey5` UF2 contains USB descriptor bytes
+`50 10 07 04`, and the downloaded `pico` default UF2 contains
+`ff fe fd fc`.
