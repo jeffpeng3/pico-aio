@@ -265,6 +265,21 @@ def main() -> None:
         "parent_orig": 0xFF,
     }
 
+    shared.append(
+        {
+            "entry": (
+                "{ .fid = 0xE0FF, .parent = 0xFF, "
+                ".name = NULL, .type = FILE_TYPE_INTERNAL_EF | FILE_DATA_FLASH, "
+                ".data = NULL, .ef_structure = FILE_EF_TRANSPARENT, .acl = ACL_NONE }"
+            ),
+            "fid": 0xE0FF,
+            "source": "shared",
+            "orig_index": None,
+            "ns": 3,
+            "parent_orig": 0xFF,
+        }
+    )
+
     combined = records + [shared_mf] + shared
 
     index: dict[tuple[str, int], int] = {}
@@ -289,7 +304,7 @@ def main() -> None:
         parent = record["parent_orig"]
         if record["fid"] == 0x3F00:
             parent = 0xFF
-        elif record["ns"] == 3 and record["source"] != "shared":
+        elif record["ns"] == 3 and record["fid"] != 0x3F00:
             parent = mf_index[3]
         elif parent != 0xFF:
             mapped = index.get((record["source"], parent))
