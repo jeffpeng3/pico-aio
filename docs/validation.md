@@ -7,7 +7,7 @@ Validated on 2026-10-31 with the namespace build:
 - FIDO: 282 passed, 2 skipped
 - OpenPGP: 1095 passed, 8 skipped
 - PIV: 279 passed, 1 skipped
-- Combined table: 161 entries, OpenPGP FCI at index 156
+- Combined table: 162 entries, OpenPGP FCI at index 156
 - FIDO, OpenPGP/PIV, HSM, and shared namespaces are present in the table
 - Shared vault objects are in `FILE_NS_SHARED`
 - `yubikey5` builds contain `Yubico` / `Yubico YubiKey`
@@ -51,6 +51,9 @@ After the automatic reset:
 - `gpg --detach-sign` succeeds
 - `gpg --verify` reports `Good signature`
 - OpenPGP encrypt/decrypt round trip returns MATCH
+- After a physical USB unplug/replug, `gpg --card-status` still shows all three keys
+- After the same power cycle, `gpg --detach-sign` returns 0 and verifies as `Good signature`
+- After the same power cycle, `ykman piv info` still reports PIV 5.7.0
 
 The generic `pico-aio-pico2-yubikey5` UF2 was flashed on 2026-10-31 before the
 namespace change.
@@ -108,8 +111,8 @@ tests/hardware/ykman-smoke.sh
 ## CI
 
 GitHub Actions run
-[41189124846](https://github.com/jeffpeng3/pico-aio/actions/runs/41189124846)
-completed successfully with the namespace build.
+[41191732113](https://github.com/jeffpeng3/pico-aio/actions/runs/41191732113)
+completed successfully with the namespace and flash layout reset build.
 
 The single `build-uf2` job builds four UF2 files:
 
