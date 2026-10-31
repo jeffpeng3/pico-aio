@@ -2,12 +2,14 @@
 
 ## Emulation
 
-Validated on 2026-10-31:
+Validated on 2026-10-31 with the namespace build:
 
 - FIDO: 282 passed, 2 skipped
 - OpenPGP: 1095 passed, 8 skipped
 - PIV: 279 passed, 1 skipped
-- Combined table: 161 entries, OpenPGP FCI at index 159
+- Combined table: 161 entries, OpenPGP FCI at index 156
+- FIDO, OpenPGP/PIV, HSM, and shared namespaces are present in the table
+- Shared vault objects are in `FILE_NS_SHARED`
 - `yubikey5` builds contain `Yubico` / `Yubico YubiKey`
 - `yubikey5` UF2 device descriptor contains `50 10 07 04` (`1050:0407`)
 - `default` UF2 device descriptor contains `ff fe fd fc` (`FEFF:FCFD`)
@@ -36,7 +38,11 @@ Earlier RP2350 validation of the minimal `file_new()` fix passed:
 - Signature verification
 - Encrypt/decrypt round trip
 
-The generic `pico-aio-pico2-yubikey5` UF2 was flashed on 2026-10-31.
+The namespace firmware changes the flash record layout. Existing hardware data
+must be erased once before flashing the namespace build.
+
+The generic `pico-aio-pico2-yubikey5` UF2 was flashed on 2026-10-31 before the
+namespace change.
 
 `ykman info` reports:
 
@@ -91,8 +97,8 @@ tests/hardware/ykman-smoke.sh
 ## CI
 
 GitHub Actions run
-[41128275389](https://github.com/jeffpeng3/pico-aio/actions/runs/41128275389)
-completed successfully in 2m25s.
+[41189124846](https://github.com/jeffpeng3/pico-aio/actions/runs/41189124846)
+completed successfully with the namespace build.
 
 The single `build-uf2` job builds four UF2 files:
 
