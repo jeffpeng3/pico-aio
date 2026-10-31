@@ -254,7 +254,7 @@ def main() -> None:
 
     shared_mf = {
         "entry": (
-            "{ .fid = 0x3F00, .ns = FILE_NS_SHARED, .parent = 0xFF, "
+            "{ .fid = 0x3F00, .parent = 0xFF, "
             ".name = NULL, .type = FILE_TYPE_DF, .data = NULL, "
             ".ef_structure = 0, .acl = { 0 } }"
         ),
