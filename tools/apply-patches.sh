@@ -45,7 +45,6 @@ check_pin "$ROOT/third_party/pico-fido" "$PICO_FIDO_COMMIT"
 check_pin "$ROOT/third_party/pico-openpgp" "$PICO_OPENPGP_COMMIT"
 check_pin "$ROOT/third_party/pico-sdk" "$PICO_SDK_COMMIT"
 
-apply_repo "$ROOT/third_party/pico-keys-sdk" pico-keys-sdk
 apply_repo "$ROOT/third_party/pico-openpgp" pico-openpgp
 apply_repo "$ROOT/third_party/pico-fido" pico-fido
 

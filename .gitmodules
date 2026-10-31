@@ -1,6 +1,6 @@
 [submodule "third_party/pico-keys-sdk"]
 	path = third_party/pico-keys-sdk
-	url = https://github.com/polhenarejos/pico-keys-sdk.git
+	url = https://github.com/jeffpeng3/pico-keys-sdk.git
 	ignore = untracked
 [submodule "third_party/pico-fido"]
 	path = third_party/pico-fido

@@ -1,0 +1,66 @@
+diff --git a/src/openpgp/key_container.c b/src/openpgp/key_container.c
+index 0401561..0be47b5 100644
+--- a/src/openpgp/key_container.c
++++ b/src/openpgp/key_container.c
+@@ -209,6 +209,7 @@ static int openpgp_key_layout_deactivate(void *ctx, uint32_t container_id) {
+ }
+ 
+ static const file_object_container_layout_t openpgp_key_container_layout = {
++    .ns = FILE_NS_OPENPGP,
+     .namespace_id = OPENPGP_OBJECT_NAMESPACE,
+     .container_kind = OPENPGP_KEY_CONTAINER_KIND,
+     .manifest_fid = openpgp_key_layout_manifest_fid,
+diff --git a/src/openpgp/management.c b/src/openpgp/management.c
+index 1768c91..bc96085 100644
+--- a/src/openpgp/management.c
++++ b/src/openpgp/management.c
+@@ -48,7 +48,7 @@ static int man_select(app_t *a, uint8_t force) {
+ }
+ 
+ INITIALIZER( man_ctor ) {
+-    register_app(man_select, man_aid);
++    register_app(man_select, man_aid, FILE_NS_OPENPGP);
+ }
+ 
+ static int man_unload(void) {
+diff --git a/src/openpgp/openpgp.c b/src/openpgp/openpgp.c
+index 4eb7a58..0b8263f 100644
+--- a/src/openpgp/openpgp.c
++++ b/src/openpgp/openpgp.c
+@@ -1296,7 +1296,7 @@ static int openpgp_select_aid(app_t *a, uint8_t force) {
+ }
+ 
+ INITIALIZER( openpgp_ctor ) {
+-    register_app(openpgp_select_aid, openpgp_aid);
++    register_app(openpgp_select_aid, openpgp_aid, FILE_NS_OPENPGP);
+ }
+ 
+ int set_atr(void) {
+diff --git a/src/openpgp/openpgp_vault.c b/src/openpgp/openpgp_vault.c
+index 910c0ce..b0eed58 100644
+--- a/src/openpgp/openpgp_vault.c
++++ b/src/openpgp/openpgp_vault.c
+@@ -60,7 +60,7 @@ typedef struct openpgp_vault_plaintext {
+ } openpgp_vault_plaintext_t;
+ 
+ static file_t *openpgp_vault_file(void) {
+-    return file_search_by_fid(EF_VAULT_KEY, NULL, SPECIFY_EF);
++    return file_search_by_fid_ns(FILE_NS_SHARED, EF_VAULT_KEY, NULL, SPECIFY_EF);
+ }
+ 
+ static int openpgp_vault_sdk_init(void) {
+diff --git a/src/openpgp/piv.c b/src/openpgp/piv.c
+index 70ac5c9..d3f3719 100644
+--- a/src/openpgp/piv.c
++++ b/src/openpgp/piv.c
+@@ -455,8 +455,8 @@ static int piv_select_aid(app_t *a, uint8_t force) {
+ }
+ 
+ INITIALIZER( piv_ctor ) {
+-    register_app(piv_select_aid, piv_aid);
+-    register_app(piv_select_aid, yk_aid);
++    register_app(piv_select_aid, piv_aid, FILE_NS_OPENPGP);
++    register_app(piv_select_aid, yk_aid, FILE_NS_OPENPGP);
+ }
+ 
+ int piv_parse_discovery(const file_t *ef) {

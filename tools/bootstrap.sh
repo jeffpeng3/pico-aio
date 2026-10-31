@@ -9,6 +9,7 @@ if [ ! -f "$ROOT/.gitmodules" ]; then
     exit 1
 fi
 
+git submodule sync -- third_party/pico-keys-sdk
 git submodule update --init \
     third_party/pico-keys-sdk \
     third_party/pico-fido \

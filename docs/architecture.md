@@ -62,3 +62,23 @@ USB VID, PID, manufacturer, and product strings are generated into
 `build/<board>/generated/pico_aio_usb_config.h` and included only by
 `usb_descriptors.c`. Changing between `default` and `yubikey5` recompiles that
 one object, not the whole firmware.
+
+## File namespaces
+
+Every `file_t` carries an `ns` field. Logical FIDs remain 16-bit and keep their
+existing arithmetic and protocol values.
+
+```c
+FILE_NS_HSM
+FILE_NS_OPENPGP
+FILE_NS_FIDO
+FILE_NS_SHARED
+```
+
+`file_search()` and `file_new()` keep their existing signatures and use the
+current applet namespace. Boot, flash scan, containers, and the shared vault use
+explicit `_ns` APIs.
+
+Flash records store the namespace alongside the FID. The shared vault container
+uses `FILE_NS_SHARED`, while FIDO and OpenPGP/PIV use their own namespaces for
+credentials, keys, and metadata.

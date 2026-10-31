@@ -1,0 +1,125 @@
+diff --git a/src/fido/cmd_register.c b/src/fido/cmd_register.c
+index 6cea042..a627ed5 100644
+--- a/src/fido/cmd_register.c
++++ b/src/fido/cmd_register.c
+@@ -43,7 +43,7 @@ static int u2f_select(app_t *a, uint8_t force) {
+ }
+ 
+ INITIALIZER ( u2f_ctor ) {
+-    register_app(u2f_select, u2f_aid);
++    register_app(u2f_select, u2f_aid, FILE_NS_FIDO);
+ }
+ 
+ int u2f_unload(void) {
+diff --git a/src/fido/fido.c b/src/fido/fido.c
+index 93120fd..89882ef 100644
+--- a/src/fido/fido.c
++++ b/src/fido/fido.c
+@@ -106,8 +106,8 @@ INITIALIZER ( fido_ctor ) {
+ #endif
+     get_version_major = fido_get_version_major;
+     get_version_minor = fido_get_version_minor;
+-    register_app(fido_select, fido_aid);
+-    register_app(fido_select, fido_aid_backup);
++    register_app(fido_select, fido_aid, FILE_NS_FIDO);
++    register_app(fido_select, fido_aid_backup, FILE_NS_FIDO);
+ }
+ 
+ static int fido_unload(void) {
+@@ -398,7 +398,7 @@ int encrypt_keydev_f1(const uint8_t keydev[32]) {
+ int scan_files_fido(void) {
+     ef_keydev = file_search_by_fid(EF_KEY_DEV, NULL, SPECIFY_EF);
+     ef_keydev_enc = file_search_by_fid(EF_KEY_DEV_ENC, NULL, SPECIFY_EF);
+-    ef_vault_key = file_search_by_fid(EF_VAULT_KEY, NULL, SPECIFY_EF);
++    ef_vault_key = file_search_by_fid_ns(FILE_NS_SHARED, EF_VAULT_KEY, NULL, SPECIFY_EF);
+     if (ef_keydev) {
+         if (!file_has_data(ef_keydev) && !file_has_data(ef_keydev_enc)) {
+             printf("KEY DEVICE is empty. Generating SECP256R1 curve...");
+diff --git a/src/fido/fido_vault.c b/src/fido/fido_vault.c
+index 8b08f67..96d2c4a 100644
+--- a/src/fido/fido_vault.c
++++ b/src/fido/fido_vault.c
+@@ -50,7 +50,7 @@ static int vault_sdk_init(void) {
+         log_errstr("vault init: missing object crypto provider auth=%p protector=%p", (void *)primary.auth, (void *)primary.protector);
+         return PICOKEYS_EXEC_ERROR;
+     }
+-    return picokeys_vault_init(&primary, NULL, ef_vault_key, file_search_by_fid(EF_VAULT_LABEL, NULL, SPECIFY_EF));
++    return picokeys_vault_init(&primary, NULL, ef_vault_key, file_search_by_fid_ns(FILE_NS_SHARED, EF_VAULT_LABEL, NULL, SPECIFY_EF));
+ }
+ 
+ static const uint8_t vault_blob_magic[] = { 'P', 'K', 'V', 1 };
+diff --git a/src/fido/management.c b/src/fido/management.c
+index b64ebc6..76fa58d 100644
+--- a/src/fido/management.c
++++ b/src/fido/management.c
+@@ -51,7 +51,7 @@ static int man_select(app_t *a, uint8_t force) {
+ }
+ 
+ INITIALIZER ( man_ctor ) {
+-    register_app(man_select, man_aid);
++    register_app(man_select, man_aid, FILE_NS_FIDO);
+ }
+ 
+ static int man_unload(void) {
+diff --git a/src/fido/oath.c b/src/fido/oath.c
+index 420c60e..8f3e192 100644
+--- a/src/fido/oath.c
++++ b/src/fido/oath.c
+@@ -199,7 +199,7 @@ static int oath_select(app_t *a, uint8_t force) {
+ }
+ 
+ INITIALIZER ( oath_ctor ) {
+-    register_app(oath_select, oath_aid);
++    register_app(oath_select, oath_aid, FILE_NS_FIDO);
+ }
+ 
+ static int oath_unload(void) {
+diff --git a/src/fido/oath_container.c b/src/fido/oath_container.c
+index 6be4ace..b112258 100644
+--- a/src/fido/oath_container.c
++++ b/src/fido/oath_container.c
+@@ -218,6 +218,7 @@ static int oath_layout_deactivate(void *ctx, uint32_t container_id) {
+ }
+ 
+ static const file_object_container_layout_t oath_container_layout = {
++    .ns = FILE_NS_FIDO,
+     .namespace_id = FIDO_OATH_OBJECT_NAMESPACE,
+     .container_kind = FIDO_OATH_CONTAINER_KIND,
+     .manifest_fid = oath_layout_manifest_fid,
+diff --git a/src/fido/otp.c b/src/fido/otp.c
+index 8a8a9ec..67d4677 100644
+--- a/src/fido/otp.c
++++ b/src/fido/otp.c
+@@ -571,7 +571,7 @@ static int otp_button_pressed(uint8_t slot) {
+ }
+ 
+ INITIALIZER( otp_ctor ) {
+-    register_app(otp_select, otp_aid);
++    register_app(otp_select, otp_aid, FILE_NS_FIDO);
+     button_pressed_cb = otp_button_pressed;
+     hid_set_report_cb = otp_hid_set_report_cb;
+     hid_get_report_cb = otp_hid_get_report_cb;
+diff --git a/src/fido/otp_container.c b/src/fido/otp_container.c
+index 4e527d7..9e0fa6a 100644
+--- a/src/fido/otp_container.c
++++ b/src/fido/otp_container.c
+@@ -190,6 +190,7 @@ static int otp_layout_retire(void *ctx, uint32_t container_id, const file_object
+ }
+ 
+ static const file_object_container_layout_t otp_container_layout = {
++    .ns = FILE_NS_FIDO,
+     .namespace_id = FIDO_OTP_OBJECT_NAMESPACE,
+     .container_kind = FIDO_OTP_CONTAINER_KIND,
+     .manifest_fid = otp_layout_manifest_fid,
+diff --git a/src/fido/resident_container.c b/src/fido/resident_container.c
+index 17c57c3..7b761da 100644
+--- a/src/fido/resident_container.c
++++ b/src/fido/resident_container.c
+@@ -232,6 +232,7 @@ static int resident_layout_deactivate(void *ctx, uint32_t container_id) {
+ }
+ 
+ static const file_object_container_layout_t resident_container_layout = {
++    .ns = FILE_NS_FIDO,
+     .namespace_id = FIDO_OBJECT_NAMESPACE,
+     .container_kind = FIDO_RESIDENT_CONTAINER_KIND,
+     .manifest_fid = resident_layout_manifest_fid,

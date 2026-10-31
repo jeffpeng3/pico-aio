@@ -82,28 +82,47 @@ directory per board:
 and incremental compilation. Tagged releases attach the UF2 files and
 `SHA256SUMS.txt`.
 
-## Patches
+## Namespace
 
-Patches are kept in `patches/` and applied to submodules, not committed inside
-the submodules.
+The file store is namespaced so FIDO, OpenPGP/PIV, and future HSM files do not
+share the same FID space:
+
+```c
+FILE_NS_HSM
+FILE_NS_OPENPGP
+FILE_NS_FIDO
+FILE_NS_SHARED
+```
+
+Shared vault files live in `FILE_NS_SHARED`. FIDO and OpenPGP/PIV separate
+their vault keys with the SDK vault `app_id`.
+
+## Patches and SDK fork
+
+`pico-keys-sdk` is a fork:
+
+```text
+https://github.com/jeffpeng3/pico-keys-sdk
+```
+
+The fork `main` branch carries SDK changes, including the namespace
+implementation, `file_new()` fix, USB descriptor overrides, custom board
+header support, and WS2812 board support. AIO pins a fork commit and does not
+apply SDK patches during the build.
+
+FIDO and OpenPGP remain upstream submodules with small patches:
 
 | Repository | Patch | Purpose |
 |---|---|---|
-| `pico-keys-sdk` | `0001-fs-initialize-dynamic-file-entries` | Fix `file_new()` stale state |
-| `pico-keys-sdk` | `0002-main-longest-aid-match` | Correct multi-applet AID selection |
-| `pico-keys-sdk` | `0003-usb-descriptor-overrides` | Allow manufacturer/product strings |
-| `pico-keys-sdk` | `0004-import-relative-paths` | Support SDK in a subdirectory |
-| `pico-keys-sdk` | `0005-led-force-board-ws2812` | Force WS2812 GPIO22 on the dedicated board |
-| `pico-keys-sdk` | `0006-usb-config-header` | Keep USB profile defines out of global flags |
-| `pico-keys-sdk` | `0007-usb-config-include` | Include the generated USB config header |
-| `pico-keys-sdk` | `0008-board-header-path` | Read custom board headers from PICO_BOARD_HEADER_FILE |
 | `pico-openpgp` | `0001-piv-rename-cmd-version` | Avoid `cmd_version` symbol collision |
 | `pico-openpgp` | `0002-files-combined-table-guard` | Disable standalone file table |
+| `pico-openpgp` | `0003-namespace-applets` | Namespace-aware applet registration and vault |
 | `pico-fido` | `0001-files-combined-table-guard` | Disable standalone file table |
+| `pico-fido` | `0002-namespace-applets` | Namespace-aware applet registration and containers |
 
-The `file_new()` patch tracks upstream issue
+The fork tracks upstream issue
 [polhenarejos/pico-keys-sdk#39](https://github.com/polhenarejos/pico-keys-sdk/issues/39).
-When upstream includes the fix, remove the patch and bump the submodule.
+SDK upstream synchronization happens in the fork, not in AIO.
 
 Manifest tolerance and key-load fallback experiments are intentionally not
 included. The hardware failure is fixed by correct `file_new()` initialization.

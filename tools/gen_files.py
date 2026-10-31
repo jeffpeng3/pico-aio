@@ -157,6 +157,35 @@ def entry_has_name(entry: str, name: str) -> bool:
     return bool(re.search(rf"\.name\s*=\s*{re.escape(name)}\b", entry))
 
 
+def entry_parent(entry: str) -> int:
+    match = re.search(r"\.parent\s*=\s*(0x[0-9A-Fa-f]+|\d+)", entry)
+    return int(match.group(1), 0) if match else 0xFF
+
+
+def set_ns(entry: str, ns: int) -> str:
+    ns_names = {
+        0: "FILE_NS_HSM",
+        1: "FILE_NS_OPENPGP",
+        2: "FILE_NS_FIDO",
+        3: "FILE_NS_SHARED",
+    }
+    return re.sub(
+        r"(\.fid\s*=\s*[^,}]+)",
+        rf"\1, .ns = {ns_names[ns]}",
+        entry,
+        count=1,
+    )
+
+
+def set_parent(entry: str, parent: int) -> str:
+    return re.sub(
+        r"\.parent\s*=\s*[^,}]+",
+        f".parent = 0x{parent:02X}",
+        entry,
+        count=1,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sdk-dir", type=Path, required=True)
@@ -176,37 +205,116 @@ def main() -> None:
         table_body(args.openpgp_dir / "src" / "openpgp" / "files.c")
     )
 
-    combined: list[tuple[int, str, str]] = []
-    for entry in fido_entries:
-        fid = entry_fid(entry, defines)
-        if fid == 0:
-            continue
-        combined.append((fid, set_fid(entry, fid), "fido"))
+    # Shared objects are available from every applet.
+    shared_fids = {0xCE03, 0xCE04}
 
-    for entry in pgp_entries:
-        fid = entry_fid(entry, defines)
-        if fid == 0x3F00:
-            continue
-        if fid == 0 and not entry_has_name(entry, "openpgp_aid"):
-            continue
-        if fid == 0xCE03:
-            continue
-        combined.append((fid, set_fid(entry, fid), "openpgp"))
+    records: list[dict] = []
+    shared: list[dict] = []
+    seen_input: set[tuple[int, int]] = set()
+    for source, entries, ns in (
+        ("fido", fido_entries, 2),
+        ("openpgp", pgp_entries, 1),
+    ):
+        for orig_index, entry in enumerate(entries):
+            fid = entry_fid(entry, defines)
+            if fid is None:
+                continue
+            if source == "fido" and fid == 0:
+                continue
+            if source == "openpgp" and fid == 0 and not entry_has_name(entry, "openpgp_aid"):
+                continue
+            if fid in shared_fids:
+                if not any(item["fid"] == fid for item in shared):
+                    shared.append(
+                        {
+                            "entry": entry,
+                            "fid": fid,
+                            "source": source,
+                            "orig_index": orig_index,
+                            "ns": 3,
+                            "parent_orig": entry_parent(entry),
+                        }
+                    )
+                continue
+            key = (ns, fid)
+            if key in seen_input:
+                print(f"duplicate source FID skipped: ns={ns} fid=0x{fid:04X}")
+                continue
+            seen_input.add(key)
+            records.append(
+                {
+                    "entry": entry,
+                    "fid": fid,
+                    "source": source,
+                    "orig_index": orig_index,
+                    "ns": ns,
+                    "parent_orig": entry_parent(entry),
+                }
+            )
 
-    seen: dict[int, set[str]] = {}
-    for fid, _, source in combined:
-        seen.setdefault(fid, set()).add(source)
-    dupes = {fid: sources for fid, sources in seen.items() if len(sources) > 1}
-    if dupes:
-        raise SystemExit(f"cross-source duplicate FIDs after merge: {dupes}")
+    shared_mf = {
+        "entry": (
+            "{ .fid = 0x3F00, .ns = FILE_NS_SHARED, .parent = 0xFF, "
+            ".name = NULL, .type = FILE_TYPE_DF, .data = NULL, "
+            ".ef_structure = 0, .acl = { 0 } }"
+        ),
+        "fid": 0x3F00,
+        "source": "shared",
+        "orig_index": None,
+        "ns": 3,
+        "parent_orig": 0xFF,
+    }
+
+    combined = records + [shared_mf] + shared
+
+    index: dict[tuple[str, int], int] = {}
+    mf_index: dict[int, int] = {}
+    for i, record in enumerate(combined):
+        if record["orig_index"] is not None:
+            index[(record["source"], record["orig_index"])] = i
+        if record["fid"] == 0x3F00 and record["parent_orig"] == 0xFF:
+            mf_index[record["ns"]] = i
+
+    seen: dict[tuple[int, int], str] = {}
+    for record in combined:
+        key = (record["ns"], record["fid"])
+        if key in seen:
+            raise SystemExit(
+                f"duplicate FID after merge: ns={record['ns']} fid=0x{record['fid']:04X}"
+            )
+        seen[key] = record["source"]
+
+    rendered: list[str] = []
+    for record in combined:
+        parent = record["parent_orig"]
+        if record["fid"] == 0x3F00:
+            parent = 0xFF
+        elif record["ns"] == 3 and record["source"] != "shared":
+            parent = mf_index[3]
+        elif parent != 0xFF:
+            mapped = index.get((record["source"], parent))
+            if mapped is None:
+                raise SystemExit(
+                    f"missing parent index for {record['source']} "
+                    f"fid=0x{record['fid']:04X} parent={parent}"
+                )
+            parent = mapped
+        entry = set_fid(record["entry"], record["fid"])
+        entry = set_ns(entry, record["ns"])
+        entry = set_parent(entry, parent)
+        rendered.append(entry)
 
     openpgp_index = None
-    for index, (_, entry, _) in enumerate(combined):
-        if entry_has_name(entry, "openpgp_aid"):
-            openpgp_index = index
+    for index_, record in enumerate(combined):
+        if entry_has_name(record["entry"], "openpgp_aid"):
+            openpgp_index = index_
             break
     if openpgp_index is None:
         raise SystemExit("OpenPGP FCI entry not found")
+
+    openpgp_mf = mf_index.get(1)
+    if openpgp_mf is None:
+        raise SystemExit("OpenPGP MF entry not found")
 
     lines: list[str] = [
         "/* Generated by tools/gen_files.py. Do not edit manually. */",
@@ -240,15 +348,15 @@ def main() -> None:
             "file_entry_t file_entries[] = {",
         ]
     )
-    for index, (_, entry, _source) in enumerate(combined):
-        lines.append(f"    /* {index:3d} */ {entry},")
+    for index_, entry in enumerate(rendered):
+        lines.append(f"    /* {index_:3d} */ {entry},")
     lines.extend(
         [
-            "    { .fid = 0x0000, .parent = 0xFF, .name = NULL, .type = FILE_TYPE_NOT_KNOWN, "
-            ".data = NULL, .ef_structure = 0, .acl = { 0 } }",
+            "    { .fid = 0x0000, .ns = FILE_NS_SHARED, .parent = 0xFF, .name = NULL, "
+            ".type = FILE_TYPE_NOT_KNOWN, .data = NULL, .ef_structure = 0, .acl = { 0 } }",
             "};",
             "",
-            "const file_t *MF = &file_entries[0].file;",
+            f"const file_t *MF = &file_entries[{openpgp_mf}].file;",
             f"const file_t *file_openpgp = &file_entries[{openpgp_index}].file;",
             "const file_entry_t *file_last = "
             "&file_entries[sizeof(file_entries) / sizeof(file_entry_t) - 1];",
