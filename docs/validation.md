@@ -38,8 +38,19 @@ Earlier RP2350 validation of the minimal `file_new()` fix passed:
 - Signature verification
 - Encrypt/decrypt round trip
 
-The namespace firmware changes the flash record layout. Existing hardware data
-must be erased once before flashing the namespace build.
+The namespace firmware changes the flash record layout. The firmware stores a
+layout version marker in `FILE_NS_SHARED` and automatically resets incompatible
+data on first boot.
+
+The `pico-aio-rp2350-usb-yubikey5` namespace build was flashed on 2026-10-31.
+After the automatic reset:
+
+- `ykman piv info` reports PIV 5.7.0, PIN/PUK retries 3/3, default management key
+- `gpg --card-status` reports PIN lengths 127 127 127 and retries 3 0 3
+- OpenPGP on-device key generation with Ed25519 / Curve25519 / Ed25519 succeeds
+- `gpg --detach-sign` succeeds
+- `gpg --verify` reports `Good signature`
+- OpenPGP encrypt/decrypt round trip returns MATCH
 
 The generic `pico-aio-pico2-yubikey5` UF2 was flashed on 2026-10-31 before the
 namespace change.
