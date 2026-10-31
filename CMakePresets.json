@@ -59,13 +59,44 @@
         "CMAKE_BUILD_TYPE": "Release",
         "ENABLE_EMULATION": "ON"
       }
+    },
+    {
+      "name": "rp2350-usb-debug",
+      "displayName": "RP2350 USB debug BOOTSEL",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/rp2350-usb-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "PICO_BOARD": "pico_aio_rp2350_usb",
+        "PICO_AIO_USB_PROFILE": "yubikey5",
+        "PICO_AIO_DEBUG_BOOTSEL": "ON"
+      }
     }
   ],
   "buildPresets": [
-    { "name": "pico2", "configurePreset": "pico2" },
-    { "name": "pico2-yubikey5", "configurePreset": "pico2-yubikey5" },
-    { "name": "rp2350-usb", "configurePreset": "rp2350-usb" },
-    { "name": "rp2350-usb-yubikey5", "configurePreset": "rp2350-usb-yubikey5" },
-    { "name": "emu", "configurePreset": "emu" }
+    {
+      "name": "pico2",
+      "configurePreset": "pico2"
+    },
+    {
+      "name": "pico2-yubikey5",
+      "configurePreset": "pico2-yubikey5"
+    },
+    {
+      "name": "rp2350-usb",
+      "configurePreset": "rp2350-usb"
+    },
+    {
+      "name": "rp2350-usb-yubikey5",
+      "configurePreset": "rp2350-usb-yubikey5"
+    },
+    {
+      "name": "emu",
+      "configurePreset": "emu"
+    },
+    {
+      "name": "rp2350-usb-debug",
+      "configurePreset": "rp2350-usb-debug"
+    }
   ]
 }

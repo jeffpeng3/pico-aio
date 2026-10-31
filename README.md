@@ -127,6 +127,23 @@ SDK upstream synchronization happens in the fork, not in AIO.
 Manifest tolerance and key-load fallback experiments are intentionally not
 included. The hardware failure is fixed by correct `file_new()` initialization.
 
+## Debug BOOTSEL reboot
+
+A debug-only build exposes a rescue APDU that reboots directly to BOOTSEL
+without pressing the button. It is disabled by default.
+
+```bash
+tools/build.sh --board pico_aio_rp2350_usb --profile yubikey5 --debug-bootsel
+```
+
+Then:
+
+```bash
+tools/reboot-bootsel.sh --attach
+```
+
+This sends the rescue AID and `80 1F 02 00`. Do not publish debug UF2 files.
+
 ## Testing
 
 Host emulation tests:

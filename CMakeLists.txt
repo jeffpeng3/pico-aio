@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 option(ENABLE_EMULATION "Build the host emulation binary" OFF)
+option(PICO_AIO_DEBUG_BOOTSEL "Enable debug-only reboot to BOOTSEL" OFF)
 set(PICO_AIO_USB_PROFILE "default" CACHE STRING "USB profile: default, local, or yubikey5")
 set(PICO_AIO_USB_VID "" CACHE STRING "Override USB VID")
 set(PICO_AIO_USB_PID "" CACHE STRING "Override USB PID")
@@ -106,6 +107,9 @@ add_compile_definitions(
 )
 if(ENABLE_EMULATION)
     add_compile_definitions(__FOR_CI=1)
+endif()
+if(PICO_AIO_DEBUG_BOOTSEL)
+    add_compile_definitions(PICO_AIO_DEBUG_BOOTSEL=1)
 endif()
 
 file(GLOB FIDO_SOURCES CONFIGURE_DEPENDS ${PICO_AIO_FIDO_DIR}/src/fido/*.c)
